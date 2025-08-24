@@ -1,0 +1,12 @@
+# 应用配置示例
+app:
+  name: go_react_admin
+  port: 8080
+  mode: dev
+
+db:
+  # DSN 示例（PostgreSQL）：
+  # dsn: "host=localhost port=5432 user=postgres password=postgres dbname=go_react_admin sslmode=disable"
+  # DSN 示例（MySQL）：
+  # dsn: "user:password@tcp(localhost:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
+  dsn: "host=localhost port=5432 user=dbuser password=123456 dbname=demodb sslmode=disable"
