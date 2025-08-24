@@ -40,7 +40,6 @@ const DropdownClick = ({key}) => {
           mode="inline"
           defaultSelectedKeys={['1']}
           onClick={({key}) => {
-            console.log(key)
             navigate(key)
           }}
           items={[
