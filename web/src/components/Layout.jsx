@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Dropdown, Layout, Menu, theme } from 'antd';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import logo from '../assets/react.svg';
 const { Header, Sider, Content } = Layout;
 const items = [
@@ -21,7 +21,7 @@ const items = [
   { key: '/login', label: '登出' },
 ];
 
-const MyLayout = ({children}) => {
+const MyLayout = () => {
 const [collapsed, setCollapsed] = useState(false);
 const { token: { colorBgContainer, borderRadiusLG }, } = theme.useToken();
 const navigate = useNavigate();
@@ -104,7 +104,7 @@ const DropdownClick = ({key}) => {
             borderRadius: borderRadiusLG,
           }}
         >
-          {children}
+          <Outlet />
         </Content>
       </Layout>
     </Layout>

@@ -8,7 +8,7 @@ const onFinishFailed = errorInfo => {
 const onFinish = values => {
   console.log('Success:', values);
   // Navigate to the dashboard or another page on successful login
-  navigate('/');
+  navigate('/user/list');
 };
   return (
     <div style={{justifyContent: 'center', alignItems: 'center', display: 'flex', height: '100vh'}}>
