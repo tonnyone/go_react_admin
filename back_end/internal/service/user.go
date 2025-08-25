@@ -24,7 +24,6 @@ type LoginDTO struct {
 }
 
 // Login 处理登录逻辑, 返回 token
-// Login 处理登录逻辑, 返回 token
 func (s *UserService) Login(ctx context.Context, db *gorm.DB, dto *LoginDTO) (string, error) {
 	exist, err := s.userDAO.CheckUserExist(ctx, db, dto.Username, dto.Password)
 	if err != nil {
