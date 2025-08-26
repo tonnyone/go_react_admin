@@ -9,4 +9,8 @@ type AppConfig struct {
 	DB struct {
 		DSN string
 	}
+	Log struct {
+		Level  string // info, debug, warn, error
+		Format string // text, json
+	}
 }

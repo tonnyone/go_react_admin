@@ -1,3 +1,7 @@
+# 日志配置
+log:
+  level: info   # 支持 info/debug/warn/error
+  format: text  # 支持 text/json
 # 应用配置示例
 app:
   name: go_react_admin

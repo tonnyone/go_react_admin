@@ -14,10 +14,9 @@ type LoginRequest struct {
 
 // 注册请求结构体
 type RegisterRequest struct {
-	Username   string `json:"username" binding:"required"`
-	Password   string `json:"password" binding:"required"`
-	Email      string `json:"email"`
-	Department string `json:"department"`
+	Phone    string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password" binding:"required"`
 }
 
 func NewLoginHandler(userService *service.UserService, db *gorm.DB) gin.HandlerFunc {
@@ -28,15 +27,15 @@ func NewLoginHandler(userService *service.UserService, db *gorm.DB) gin.HandlerF
 			return
 		}
 		dto := service.LoginDTO{
-			Username: req.Username,
+			Account:  req.Username,
 			Password: req.Password,
 		}
-		token, err := userService.Login(c.Request.Context(), db, &dto)
+		err := userService.Login(c.Request.Context(), db, &dto)
 		if err != nil {
 			Fail(c, err.Error())
 			return
 		}
-		Success(c, gin.H{"token": token})
+		Success(c, "Success")
 	}
 }
 
@@ -48,7 +47,19 @@ func NewRegisterHandler(userService *service.UserService, db *gorm.DB) gin.Handl
 			ParamError(c, err)
 			return
 		}
-		// TODO: 检查用户名是否存在，写入数据库
+		if req.Phone == "" && req.Email == "" {
+			Fail(c, "手机号或邮箱必须填写一个")
+			return
+		}
+		if req.Password == "" {
+			Fail(c, "密码不能为空")
+			return
+		}
+		err := userService.Register(c.Request.Context(), db, req.Phone, req.Email, req.Password)
+		if err != nil {
+			Fail(c, err.Error())
+			return
+		}
 		Success(c, "注册成功")
 	}
 }

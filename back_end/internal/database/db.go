@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/tonnyone/go_react_admin/internal/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"sync"
@@ -12,10 +13,14 @@ var (
 )
 
 // InitDB 初始化全局 DB 实例（可根据实际配置调整参数）
-func InitDB(dsn string) (*gorm.DB, error) {
+// logLevel: "info", "warn", "error", "silent", "debug"
+func InitDB(dsn string, logLevel string) (*gorm.DB, error) {
 	var err error
 	dbOnce.Do(func() {
-		dbInstance, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		gormLogger := logger.NewGormLogger(logLevel)
+		dbInstance, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+			Logger: gormLogger,
+		})
 	})
 	return dbInstance, err
 }

@@ -13,7 +13,9 @@ func RegisterRoutes(r *gin.Engine) {
 	userService := service.NewUserService(userDAO)
 	db := database.GetDB()
 
+	//v1 := r.Group("/v1")
 	r.POST("/login", handler.NewLoginHandler(userService, db))
 	r.POST("/register", handler.NewRegisterHandler(userService, db))
+	//r.Use(middleware.BasicAuthMiddleware(userService, db))
 	r.POST("/logout", handler.NewLogoutHandler())
 }
