@@ -43,6 +43,7 @@ psql -h 127.0.0.1 -p 5432 -U dbuser -d demodb
 
 
 ## 参考
+https://www.endpointdev.com/blog/2009/12/mysql-and-postgres-command-equivalents/
 https://sqlconjuror.com/mysql-and-postgresql-equivalent-commands/
 http://www.postgres.cn/docs/14/index.html
 https://www.sjkjc.com/postgresql/psql-commands/
