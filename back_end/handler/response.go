@@ -10,24 +10,40 @@ import (
 	"net/http"
 )
 
-// 通用响应结构体
-// code: 0=成功, 1=业务失败, 其它=自定义
-func Success(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"msg":  "success",
-		"data": data,
+// Code 响应码类型（字符串枚举）
+type Code int
+
+// 统一响应 code 常量
+const (
+	OK          Code = 0   // 成功
+	PARAM_ERROR Code = 400 // 参数错误
+	FAIL        Code = 500 // 业务/系统错误
+)
+
+// Resp 统一响应结构体
+type Resp struct {
+	Code Code        `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
+}
+
+// JSON 统一响应输出
+func ResponseSuccss(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, Resp{
+		Code: OK,
+		Msg:  "success",
+		Data: data,
 	})
 }
 
-func Fail(c *gin.Context, msg string) {
+func ResponseFail(c *gin.Context, msg string) {
 	c.JSON(http.StatusOK, gin.H{
-		"code": 1,
+		"code": FAIL,
 		"msg":  msg,
 	})
 }
 
-func ParamError(c *gin.Context, err error) {
+func ResponseParamError(c *gin.Context, err error) {
 	var msg string
 	switch e := err.(type) {
 	case *json.SyntaxError:
@@ -46,7 +62,7 @@ func ParamError(c *gin.Context, err error) {
 		}
 	}
 	c.JSON(http.StatusBadRequest, gin.H{
-		"code": 1,
+		"code": PARAM_ERROR,
 		"msg":  msg,
 	})
 }

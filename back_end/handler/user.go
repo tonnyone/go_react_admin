@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/tonnyone/go_react_admin/internal/service"
 	"gorm.io/gorm"
@@ -23,7 +24,7 @@ func NewLoginHandler(userService *service.UserService, db *gorm.DB) gin.HandlerF
 	return func(c *gin.Context) {
 		var req LoginRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			ParamError(c, err)
+			ResponseParamError(c, err)
 			return
 		}
 		dto := service.LoginDTO{
@@ -32,10 +33,10 @@ func NewLoginHandler(userService *service.UserService, db *gorm.DB) gin.HandlerF
 		}
 		err := userService.Login(c.Request.Context(), db, &dto)
 		if err != nil {
-			Fail(c, err.Error())
+			ResponseFail(c, err.Error())
 			return
 		}
-		Success(c, "Success")
+		ResponseSuccss(c, nil)
 	}
 }
 
@@ -44,23 +45,23 @@ func NewRegisterHandler(userService *service.UserService, db *gorm.DB) gin.Handl
 	return func(c *gin.Context) {
 		var req RegisterRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			ParamError(c, err)
+			ResponseParamError(c, err)
 			return
 		}
 		if req.Phone == "" && req.Email == "" {
-			Fail(c, "手机号或邮箱必须填写一个")
+			ResponseParamError(c, errors.New("手机号或邮箱必须填写一个"))
 			return
 		}
 		if req.Password == "" {
-			Fail(c, "密码不能为空")
+			ResponseParamError(c, errors.New("密码不能为空"))
 			return
 		}
 		err := userService.Register(c.Request.Context(), db, req.Phone, req.Email, req.Password)
 		if err != nil {
-			Fail(c, err.Error())
+			ResponseFail(c, err.Error())
 			return
 		}
-		Success(c, "注册成功")
+		ResponseSuccss(c, nil)
 	}
 }
 
@@ -68,6 +69,6 @@ func NewRegisterHandler(userService *service.UserService, db *gorm.DB) gin.Handl
 func NewLogoutHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO: 清理token或session
-		Success(c, "已登出")
+		ResponseSuccss(c, nil)
 	}
 }

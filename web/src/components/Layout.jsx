@@ -1,14 +1,12 @@
 import {
   MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined
+  MenuUnfoldOutlined
 } from '@ant-design/icons';
 import { Button, Dropdown, Layout, Menu, theme } from 'antd';
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import logo from '../assets/react.svg';
+import { siderMenuItems } from '../router/siderMenuItems.jsx';
 const { Header, Sider, Content } = Layout;
 const items = [
   {
@@ -42,39 +40,7 @@ const DropdownClick = ({key}) => {
           onClick={({key}) => {
             navigate(key)
           }}
-          items={[
-            {
-              key: '/user',
-              icon: <UserOutlined />,
-              label: '用户权限管理',
-              children: [
-                {
-                    key: '/user/list',
-                    icon: <VideoCameraOutlined />,
-                    label: '用户管理',
-                },
-                {
-                    key: '/user/role',
-                    icon: <VideoCameraOutlined />,
-                    label: '角色管理',
-                },
-                {
-                    key: '/user/menu',
-                    icon: <UploadOutlined />,
-                    label: '菜单管理',
-                },
-                {
-                    key: '/user/resource',
-                    icon: <VideoCameraOutlined />,
-                    label: '资源管理',
-                }
-            ]},
-            {
-                key: '/about',
-                icon: <UploadOutlined />,
-                label: '关于我们',
-            }
-          ]}
+          items={siderMenuItems}
         />
       </Sider>
       <Layout>
