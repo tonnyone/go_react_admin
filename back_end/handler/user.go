@@ -9,7 +9,7 @@ import (
 
 // 登录请求结构体
 type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
+	Account  string `json:"account" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -28,15 +28,15 @@ func NewLoginHandler(userService *service.UserService, db *gorm.DB) gin.HandlerF
 			return
 		}
 		dto := service.LoginDTO{
-			Account:  req.Username,
+			Account:  req.Account,
 			Password: req.Password,
 		}
-		err := userService.Login(c.Request.Context(), db, &dto)
+		token, err := userService.Login(c.Request.Context(), db, &dto)
 		if err != nil {
 			ResponseFail(c, err.Error())
 			return
 		}
-		ResponseSuccss(c, nil)
+		ResponseSuccss(c, token)
 	}
 }
 

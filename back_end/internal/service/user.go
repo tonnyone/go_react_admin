@@ -60,14 +60,14 @@ func (s *UserService) Register(ctx context.Context, db *gorm.DB, phone, email, p
 }
 
 // Login 处理登录逻辑, 返回 token
-func (s *UserService) Login(ctx context.Context, db *gorm.DB, dto *LoginDTO) error {
+func (s *UserService) Login(ctx context.Context, db *gorm.DB, dto *LoginDTO) (string, error) {
 	md5Pwd := util.MD5(dto.Password)
 	exist, err := s.userDAO.CheckUserByPhoneOrEmailExist(ctx, db, dto.Account, md5Pwd)
 	if err != nil {
-		return errors.New("内部错误")
+		return "", errors.New("内部错误")
 	}
 	if !exist {
-		return errors.New("用户名或密码错误")
+		return "", errors.New("用户名或密码错误")
 	}
-	return nil
+	return util.GenAuthToken(dto.Account, dto.Password), nil
 }

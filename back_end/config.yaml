@@ -6,7 +6,7 @@ log:
 app:
   name: go_react_admin
   port: 8080
-  mode: dev
+  mode: debug # debug release test
 
 db:
   # DSN 示例（PostgreSQL）：

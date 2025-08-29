@@ -58,13 +58,13 @@ func TestUserService_Login(t *testing.T) {
 	// 模拟慢查询（这里直接 sleep，实际可在 dao 层 sleep 或 mock）
 	time.Sleep(2 * time.Millisecond)
 	dto := &LoginDTO{Account: "testuser", Password: "123456"}
-	err := userService.Login(ctx, db, dto)
+	_, err := userService.Login(ctx, db, dto)
 	if err != nil {
 		t.Errorf("expected login success, got err: %v", err)
 	}
 	// 错误密码
 	dtoFail := &LoginDTO{Account: "testuser", Password: "wrong"}
-	err = userService.Login(ctx, db, dtoFail)
+	_, err = userService.Login(ctx, db, dtoFail)
 	if err == nil {
 		t.Errorf("expected login failure, got nil error")
 	}
@@ -115,7 +115,7 @@ func TestUserService_LoginByPhone(t *testing.T) {
 	cleanTestUser(t, db, userDAO, phone, "")
 	_ = userService.Register(context.Background(), db, phone, "", password)
 	dto := &LoginDTO{Account: phone, Password: password}
-	err := userService.Login(context.Background(), db, dto)
+	_, err := userService.Login(context.Background(), db, dto)
 	if err != nil {
 		t.Errorf("login by phone failed: %v", err)
 	}
@@ -130,7 +130,7 @@ func TestUserService_LoginByEmail(t *testing.T) {
 	cleanTestUser(t, db, userDAO, "", email)
 	_ = userService.Register(context.Background(), db, "", email, password)
 	dto := &LoginDTO{Account: email, Password: password}
-	err := userService.Login(context.Background(), db, dto)
+	_, err := userService.Login(context.Background(), db, dto)
 	if err != nil {
 		t.Errorf("login by email failed: %v", err)
 	}

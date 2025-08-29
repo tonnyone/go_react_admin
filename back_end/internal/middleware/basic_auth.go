@@ -16,7 +16,7 @@ func BasicAuthMiddleware(userService *service.UserService, db *gorm.DB) gin.Hand
 			return
 		}
 		dto := &service.LoginDTO{Account: username, Password: password}
-		err := userService.Login(c.Request.Context(), db, dto)
+		_, err := userService.Login(c.Request.Context(), db, dto)
 		if err != nil {
 			c.AbortWithStatus(401)
 			return
