@@ -47,6 +47,7 @@ const columns = [
     key: '操作',
     render: (_, record) => (
       <Space size="middle">
+        <a>修改</a>
         <a>修改角色 - {record.name}</a>
         <a>重置密码</a>
         <a>删除</a>

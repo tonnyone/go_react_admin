@@ -7,26 +7,30 @@ import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import logo from '../assets/react.svg';
 import { siderMenuItems } from '../router/siderMenuItems.jsx';
-const { Header, Sider, Content } = Layout;
-const items = [
-  {
-    key: '/user/profile',
-    label: (
-      <a> 个人信息 </a>
-    ),
-  },
-  { type: 'divider'},
-  { key: '/login', label: '登出' },
-];
+import { logout } from '../service/user.js';
 
 const MyLayout = () => {
 const [collapsed, setCollapsed] = useState(false);
 const { token: { colorBgContainer, borderRadiusLG }, } = theme.useToken();
 const navigate = useNavigate();
-const DropdownClick = ({key}) => {
-  console.log(key)
-  navigate(key)
-}
+const { Header, Sider, Content } = Layout;
+const items = [
+  {
+    label: (
+      <a> 个人信息 </a>
+    ),
+  },
+  { type: 'divider'},
+  { 
+    label: (
+      <a onClick={() => {
+        logout().then(() => {
+          navigate('/login');
+        });
+      }}> 登出 </a> 
+    ),
+  },
+];
   return (
     <Layout style={{ width: '100vw', height: '100vh' }}>
       <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -56,8 +60,8 @@ const DropdownClick = ({key}) => {
             }}
           />
           <span> RBAC Demo </span>
-          <Dropdown menu={{ items, onClick: DropdownClick}}>
-            <img src={logo} alt="logo" style={{cursor: 'pointer',float: 'right', margin: '20px'}} />
+          <Dropdown menu={{ items}}>
+            <img src={logo} alt="logo" style={{ cursor: 'pointer', float: 'right', margin: '20px' }} />
           </Dropdown>
         </Header>
         <Content

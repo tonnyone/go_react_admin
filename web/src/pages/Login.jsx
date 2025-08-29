@@ -1,71 +1,98 @@
-import { Button, Form, Input } from "antd";
-import { useContext, useEffect, useState } from 'react';
+import { LockOutlined, MailOutlined, MobileOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Tabs, message } from "antd";
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageContext } from '../App';
 import { login } from '../service/user';
+
 
 const Login = () => {
   const navigate = useNavigate();
-  const messageApi = useContext(MessageContext);
-  const [loginError, setLoginError] = useState(null);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [loginType, setLoginType] = useState('mobile'); // 'mobile' or 'email'
+
   const onFinishFailed = errorInfo => {
-    console.log('Failed:', errorInfo);
+    console.error('Failed:', errorInfo);
   };
+
   const onFinish = (data) => {
     login(data)
       .then(res => {
-        console.log("success", res);
         navigate('/user/list');
-        setLoginError(null);
       })
       .catch(err => {
-        setLoginError('登录失败，请检查用户名和密码');
+        if (messageApi) {
+          messageApi.error(err.message || '登录失败，请检查用户名和密码');
+        }
       });
   };
 
-  useEffect(() => {
-    if (loginError && messageApi) {
-      messageApi.error(loginError);
-    }
-  }, [loginError, messageApi]);
+  // 使用 items 属性来定义标签页
+  const tabItems = [
+    {
+      key: 'mobile',
+      label: '手机号登录',
+    },
+    {
+      key: 'email',
+      label: '邮箱登录',
+    },
+  ];
 
   return (
-    <div style={{justifyContent: 'center', alignItems: 'center', display: 'flex', height: '100vh'}}>
-      <Form
-        name="basic"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 16 }}
-        style={{ maxWidth: 800}}
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-      >
-        <Form.Item
-          label="Username"
-          name="username"
-          rules={[{ required: true, message: "Please input your username!" }]}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5' }}>
+      {contextHolder}
+      <div style={{ width: 400, margin: '0px 0px 100px 0px', padding: '40px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', borderRadius: '8px', background: 'white' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>系统登录</h2>
+        <Tabs 
+          activeKey={loginType} 
+          onChange={setLoginType} 
+          centered 
+          items={tabItems} // 使用 items 属性
+        />
+        <Form
+          name="basic"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          size="large"
         >
-          <Input />
-        </Form.Item>
+          {loginType === 'mobile' ? (
+            <Form.Item
+              name="account"
+              rules={[
+                { required: true, message: "请输入手机号!" },
+                { pattern: /^1\d{10}$/, message: "请输入有效的11位手机号!" }
+              ]}
+            >
+              <Input prefix={<MobileOutlined />} placeholder="手机号" />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="account"
+              rules={[
+                { required: true, message: "请输入邮箱地址!" },
+                { type: 'email', message: '请输入有效的邮箱地址!' }
+              ]}
+            >
+              <Input prefix={<MailOutlined />} placeholder="邮箱" />
+            </Form.Item>
+          )}
 
-        <Form.Item
-          label="Password"
-          name="password"
-          rules={[{ required: true, message: "Please input your password!" }]}
-        >
-          <Input.Password />
-        </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "请输入密码!" }]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="密码" />
+          </Form.Item>
 
-        <Form.Item label={null}>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-          <Button type="default" htmlType="reset">
-            Reset
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+              登 录
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
     </div>
   );
 };
