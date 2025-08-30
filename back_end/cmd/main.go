@@ -39,8 +39,12 @@ var webCmd = &cobra.Command{
 		// 初始化日志
 		gin.SetMode(cfg.App.Mode)
 		r := gin.New()
-		r.Use(gin.LoggerWithWriter(logger.UnderlyingLogger().Out))
-		r.Use(gin.RecoveryWithWriter(logger.UnderlyingLogger().Out))
+		// 使用自定义的 GormLogger 作为 Gin 的日志记录器
+		r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+			Output:    logger.Writer(),
+			SkipPaths: []string{"/api/v1/health"},
+		}))
+		r.Use(gin.RecoveryWithWriter(logger.Writer()))
 		router.RegisterRoutes(r)
 		r.Run(fmt.Sprintf(":%d", cfg.App.Port))
 	},

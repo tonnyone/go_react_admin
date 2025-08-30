@@ -2,6 +2,8 @@ package dao
 
 import (
 	"context"
+
+	"github.com/tonnyone/go_react_admin/internal/dto"
 	"gorm.io/gorm"
 )
 
@@ -10,7 +12,7 @@ type User struct {
 	Username   string `gorm:"not null;size:64"`
 	Email      string `gorm:"unique;size:128"`
 	Phone      string `gorm:"unique;size:64"`
-	Password   string `gorm:"not null;size:128"`
+	Password   string `gorm:"not null;size:128" json:"password,omitempty"` // 忽略掉
 	Department string `gorm:"size:128"`
 	CreatedAt  int64  `gorm:"autoCreateTime:milli"`
 	UpdatedAt  int64  `gorm:"autoUpdateTime:milli"`
@@ -87,4 +89,12 @@ func (dao *UserDAO) DeleteByPhone(ctx context.Context, db *gorm.DB, phone string
 // DeleteByEmail 删除指定邮箱的用户
 func (dao *UserDAO) DeleteByEmail(ctx context.Context, db *gorm.DB, email string) error {
 	return db.WithContext(ctx).Where("email = ?", email).Delete(&User{}).Error
+}
+
+// GetUsers 根据分页、排序和过滤条件获取用户列表
+func (d *UserDAO) GetUsers(ctx context.Context, db *gorm.DB, pager *dto.Pager) ([]User, int64, error) {
+	// 直接调用通用查询函数，并告诉它要排除 'Password' 字段
+	// 1. 初始化查询构建器，并指定模型, 这一步很重要
+
+	return PaginatedQuery[User](ctx, db, pager, "Password")
 }

@@ -16,20 +16,25 @@ type Code int
 // 统一响应 code 常量
 const (
 	OK          Code = 0   // 成功
-	PARAM_ERROR Code = 400 // 参数错误
 	FAIL        Code = 500 // 业务/系统错误
+	PARAM_ERROR Code = 400 // 参数错误
 )
 
 // Resp 统一响应结构体
-type Resp struct {
-	Code Code        `json:"code"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
+type Resp[T any] struct {
+	Code Code   `json:"code"`
+	Msg  string `json:"msg"`
+	Data T      `json:"data"`
+}
+
+type PageData[T any] struct {
+	List  []T   `json:"list"`
+	Total int64 `json:"total"`
 }
 
 // JSON 统一响应输出
-func ResponseSuccss(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, Resp{
+func ResponseSuccss[T any](c *gin.Context, data T) {
+	c.JSON(http.StatusOK, Resp[T]{
 		Code: OK,
 		Msg:  "success",
 		Data: data,

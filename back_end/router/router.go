@@ -13,19 +13,32 @@ func RegisterRoutes(r *gin.Engine) {
 	// --- 依赖注入 ---
 	userService := service.NewUserService(dao.NewUserDAO())
 	db := database.GetDB()
+
 	// --- 公共路由组 (无需认证) ---
-	r.POST("/login", handler.NewLoginHandler(userService, db))
-	r.POST("/register", handler.NewRegisterHandler(userService, db))
+	publicGroup := r.Group("")
+	{
+		publicGroup.POST("/login", handler.NewLoginHandler(userService, db))
+		publicGroup.POST("/register", handler.NewRegisterHandler(userService, db))
+	}
 
 	// --- API 路由组 (需要认证) ---
-	apiGroup := r.Group("/")
-	// 在这里可以为整个 apiGroup 添加认证中间件
+	apiGroup := r.Group("")
 	apiGroup.Use(middleware.BasicAuthMiddleware(userService, db))
-	// 用户管理
-	userGroup := apiGroup.Group("user")
-	// 假设 handler 中有对应的处理函数，如果没有请先创建
-	userGroup.POST("list", handler.ListRoleHandler(db))
-	// 角色管理
-	roleGroup := apiGroup.Group("/role")
-	roleGroup.POST("list2", handler.ListRoleHandler(db))
+	{
+		// 用户管理
+		userGroup := apiGroup.Group("user")
+		{
+			userGroup.GET("/list", handler.NewGetUsersHandler(userService, db))
+			// 在这里可以继续添加其他用户相关的路由，如：
+			// userGroup.GET("/:id", handler.GetUserHandler(userService))
+			// userGroup.POST("", handler.CreateUserHandler(userService))
+		}
+
+		// 角色管理
+		roleGroup := apiGroup.Group("/role")
+		{
+			roleGroup.POST("/list", handler.ListRoleHandler(db)) // 假设这是获取角色列表
+			// 在这里可以继续添加其他角色相关的路由
+		}
+	}
 }

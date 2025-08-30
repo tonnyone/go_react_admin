@@ -16,7 +16,7 @@ instance.interceptors.request.use(
     if (!/\/login$/.test(config.url)) {
       const token = localStorage.getItem('token');
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Basic ${token}`;
       }
     }
     return config;

@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/tonnyone/go_react_admin/internal/dao"
-	"github.com/tonnyone/go_react_admin/internal/request"
 	"github.com/tonnyone/go_react_admin/internal/service"
 	"gorm.io/gorm"
 )
@@ -68,18 +67,20 @@ func DeleteRoleHandler(db *gorm.DB) gin.HandlerFunc {
 // 分页查询角色
 func ListRoleHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		pageReq := request.ParsePageReq(c)
+		pager, err := ParsePageReq(c)
+		if err != nil {
+			ResponseParamError(c, err)
+			return
+		}
 		service := service.NewRoleService()
-		roles, total, err := service.ListRoles(c.Request.Context(), db, pageReq.Page, pageReq.PageSize)
+		roles, total, err := service.ListRoles(c.Request.Context(), db, pager.PageSize, pager.PageSize)
 		if err != nil {
 			ResponseFail(c, err.Error())
 			return
 		}
-		ResponseSuccss(c, gin.H{
-			"total":     total,
-			"page":      pageReq.Page,
-			"page_size": pageReq.PageSize,
-			"roles":     roles,
+		ResponseSuccss(c, PageData[dao.Role]{
+			List:  roles,
+			Total: total,
 		})
 	}
 }

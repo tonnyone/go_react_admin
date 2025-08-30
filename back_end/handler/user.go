@@ -2,7 +2,9 @@ package handler
 
 import (
 	"errors"
+
 	"github.com/gin-gonic/gin"
+	"github.com/tonnyone/go_react_admin/internal/dao"
 	"github.com/tonnyone/go_react_admin/internal/service"
 	"gorm.io/gorm"
 )
@@ -61,7 +63,27 @@ func NewRegisterHandler(userService *service.UserService, db *gorm.DB) gin.Handl
 			ResponseFail(c, err.Error())
 			return
 		}
-		ResponseSuccss(c, nil)
+		ResponseSuccss[any](c, nil)
+	}
+}
+
+// NewGetUsersHandler 创建获取用户列表的处理器
+func NewGetUsersHandler(userService *service.UserService, db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		pager, err := ParsePageReq(c)
+		if err != nil {
+			ResponseParamError(c, err)
+			return
+		}
+		users, total, err := userService.GetUsers(c.Request.Context(), db, &pager)
+		if err != nil {
+			ResponseFail(c, "获取用户列表失败: "+err.Error())
+			return
+		}
+		ResponseSuccss(c, PageData[dao.User]{
+			List:  users,
+			Total: total,
+		})
 	}
 }
 
@@ -69,6 +91,6 @@ func NewRegisterHandler(userService *service.UserService, db *gorm.DB) gin.Handl
 func NewLogoutHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO: 清理token或session
-		ResponseSuccss(c, nil)
+		ResponseSuccss[any](c, nil)
 	}
 }

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/tonnyone/go_react_admin/internal/logger"
 	"github.com/tonnyone/go_react_admin/internal/service"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,7 @@ func BasicAuthMiddleware(userService *service.UserService, db *gorm.DB) gin.Hand
 			c.AbortWithStatus(401)
 			return
 		}
+		logger.Info("basic auth pass")
 		dto := &service.LoginDTO{Account: username, Password: password}
 		_, err := userService.Login(c.Request.Context(), db, dto)
 		if err != nil {

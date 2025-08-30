@@ -15,7 +15,9 @@ type GormLogger struct {
 }
 
 func NewGormLogger(level string) *GormLogger {
-	return &GormLogger{level: mapLogLevel(level)}
+	return &GormLogger{
+		level: mapLogLevel(level),
+	}
 }
 
 // mapLogLevel 将配置的日志级别映射为gormlogger.LogLevel
@@ -58,14 +60,37 @@ func (l *GormLogger) Error(ctx context.Context, msg string, data ...interface{})
 }
 
 func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	if l.level == gormlogger.Silent {
+	// To see all SQL, the GORM log level must be `Info`.
+	// We check this level before proceeding.
+	if l.level < gormlogger.Info {
 		return
 	}
+
 	elapsed := time.Since(begin)
 	msg, rows := fc()
+
+	// If there is an error, we log it as an Error, regardless of level (as long as it's not Silent).
 	if err != nil && l.level >= gormlogger.Error {
-		Errorf("[GORM] %s | %v | %d rows | %v", msg, elapsed, rows, err)
-	} else if l.level >= gormlogger.Info {
-		Debugf("[GORM] %s | %v | %d rows", msg, elapsed, rows)
+		// Using a fields-based approach for structured logging
+		WithFields(map[string]interface{}{
+			"module":   "gorm",
+			"duration": elapsed,
+			"rows":     rows,
+			"error":    err,
+		}).Errorf(msg)
+		return
+	}
+
+	// For slow queries, we log it as a Warning.
+	// (You can configure the slow query threshold in gorm.Config)
+	// For now, we'll just log all queries at Info level.
+
+	// Log successful queries at Info level.
+	if l.level >= gormlogger.Info {
+		WithFields(map[string]interface{}{
+			"module":   "gorm",
+			"duration": elapsed,
+			"rows":     rows,
+		}).Infof(msg)
 	}
 }

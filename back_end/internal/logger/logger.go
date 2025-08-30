@@ -2,6 +2,7 @@ package logger
 
 import (
 	"github.com/sirupsen/logrus"
+	"io"
 	"os"
 )
 
@@ -96,12 +97,20 @@ func Debug(args ...interface{})                      { stdLogger.Debug(args...) 
 func Debugf(format string, args ...interface{})      { stdLogger.Debugf(format, args...) }
 func WithFields(fields map[string]interface{}) Entry { return stdLogger.WithFields(fields) }
 
-// Logger/Writer 仅供集成第三方中间件（如Gin日志）使用，业务代码请勿直接调用
 // UnderlyingLogger 仅供集成第三方中间件（如Gin日志）使用，业务代码请勿直接调用
 func UnderlyingLogger() *logrus.Logger {
 	if l, ok := stdLogger.(*logrusLogger); ok {
 		return l.l
 	}
+	// 如果stdLogger不是*logrusLogger类型，返回一个默认的logrus实例
+	// 或者根据你的错误处理策略，也可以panic
 	return logrus.StandardLogger()
 }
-func Writer() *os.File { return os.Stdout }
+
+// Writer 仅供集成第三方中间件（如Gin日志）使用，业务代码请勿直接调用
+func Writer() *io.PipeWriter {
+	if l, ok := stdLogger.(*logrusLogger); ok {
+		return l.l.Writer()
+	}
+	return logrus.StandardLogger().Writer()
+}
