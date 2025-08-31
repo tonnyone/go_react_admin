@@ -5,18 +5,27 @@ import (
 
 	"github.com/tonnyone/go_react_admin/internal/dto"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type User struct {
-	ID         string `gorm:"type:char(36);primaryKey"` // uuid主键
-	Username   string `gorm:"not null;size:64"`
-	Email      string `gorm:"unique;size:128"`
-	Phone      string `gorm:"unique;size:64"`
-	Password   string `gorm:"not null;size:128" json:"password,omitempty"` // 忽略掉
-	Department string `gorm:"size:128"`
-	CreatedAt  int64  `gorm:"autoCreateTime:milli"`
-	UpdatedAt  int64  `gorm:"autoUpdateTime:milli"`
-	Disabled   bool   `gorm:"default:false"`
+	ID         string  `gorm:"type:char(36);primaryKey"` // uuid主键
+	Username   string  `gorm:"not null;size:64"`
+	Email      string  `gorm:"unique;size:128"`
+	Phone      string  `gorm:"unique;size:64"`
+	Password   string  `gorm:"not null;size:128" json:"password,omitempty"` // 忽略掉
+	Department string  `gorm:"size:128"`
+	CreatedAt  int64   `gorm:"autoCreateTime:milli"`
+	UpdatedAt  int64   `gorm:"autoUpdateTime:milli"`
+	Disabled   bool    `gorm:"default:false"`
+	Roles      []*Role `gorm:"many2many:user_roles;"`
+}
+
+type UserRole struct {
+	UserID    string `gorm:"type:char(36);not null;primaryKey"`
+	RoleID    string `gorm:"type:char(36);not null;primaryKey"`
+	CreatedAt int64  `gorm:"autoCreateTime:milli"`
+	CreatedBy string `gorm:"type:char(36);not null;"`
 }
 
 type UserDAO struct{}
@@ -94,7 +103,37 @@ func (dao *UserDAO) DeleteByEmail(ctx context.Context, db *gorm.DB, email string
 // GetUsers 根据分页、排序和过滤条件获取用户列表
 func (d *UserDAO) GetUsers(ctx context.Context, db *gorm.DB, pager *dto.Pager) ([]User, int64, error) {
 	// 直接调用通用查询函数，并告诉它要排除 'Password' 字段
-	// 1. 初始化查询构建器，并指定模型, 这一步很重要
-
 	return PaginatedQuery[User](ctx, db, pager, "Password")
+}
+
+// GetUser 根据ID获取用户信息
+func (d *UserDAO) GetUser(ctx context.Context, db *gorm.DB, id string) (*User, error) {
+	var user User
+	err := db.WithContext(ctx).Where("id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// ClearUserRoles 清理用户角色
+func ClearUserRoles(ctx context.Context, db *gorm.DB, userID string) error {
+	return db.WithContext(ctx).Where("user_id = ?", userID).Delete(&UserRole{}).Error
+}
+
+// AppendUserRoles 为用户追加新的角色，如果角色已存在则忽略
+func (d *UserDAO) AppendUserRoles(ctx context.Context, db *gorm.DB, userID string, roleIDs []string) error {
+	if len(roleIDs) == 0 {
+		return nil
+	}
+	var userRoles []UserRole
+	for _, roleID := range roleIDs {
+		userRoles = append(userRoles, UserRole{
+			UserID: userID,
+			RoleID: roleID,
+		})
+	}
+	// 使用 OnConflict(DoNothing: true) 来避免因主键冲突而报错
+	// 这会只插入那些用户尚不具备的角色关联
+	return db.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(&userRoles).Error
 }

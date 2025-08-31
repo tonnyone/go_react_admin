@@ -4,11 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tonnyone/go_react_admin/internal/logger"
 	"github.com/tonnyone/go_react_admin/internal/service"
-	"gorm.io/gorm"
 )
 
+const ContextUserKey = "user"
+
 // BasicAuthMiddleware 基于数据库的 Basic Auth 认证中间件
-func BasicAuthMiddleware(userService *service.UserService, db *gorm.DB) gin.HandlerFunc {
+func BasicAuthMiddleware(userService *service.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username, password, ok := c.Request.BasicAuth()
 		if !ok {
@@ -18,12 +19,12 @@ func BasicAuthMiddleware(userService *service.UserService, db *gorm.DB) gin.Hand
 		}
 		logger.Info("basic auth pass")
 		dto := &service.LoginDTO{Account: username, Password: password}
-		_, err := userService.Login(c.Request.Context(), db, dto)
+		_, err := userService.Login(c.Request.Context(), dto)
 		if err != nil {
 			c.AbortWithStatus(401)
 			return
 		}
-		c.Set("user", username)
+		c.Set(ContextUserKey, username)
 		c.Next()
 	}
 }

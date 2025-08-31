@@ -36,3 +36,35 @@ func (dao *RoleDAO) DeleteRoleByID(ctx context.Context, db *gorm.DB, id string) 
 func (dao *RoleDAO) DisableRoleByID(ctx context.Context, db *gorm.DB, id string) error {
 	return db.WithContext(ctx).Model(&Role{}).Where("id = ?", id).Update("disabled", true).Error
 }
+
+// FindRolesByUserIDs 根据一组用户ID，查询他们所有的角色
+func (d *RoleDAO) FindRolesByUserIDs(ctx context.Context, db *gorm.DB, userIDs []string) (map[string][]Role, error) {
+	// 定义一个临时的结构体来接收 JOIN 查询的结果
+	type UserRoleResult struct {
+		UserID   string
+		RoleID   string
+		RoleName string
+	}
+	var results []UserRoleResult
+	// 执行原生 SQL JOIN 查询
+	// 这里我们直接操作 user_roles 表
+	err := db.WithContext(ctx).Table("roles as r").
+		Select("ur.user_id, r.id as role_id, r.name as role_name").
+		Joins("JOIN user_roles as ur ON r.id = ur.role_id").
+		Where("ur.user_id IN ?", userIDs).
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+	// 将扁平化的查询结果组装成 map
+	rolesMap := make(map[string][]Role)
+	for _, r := range results {
+		role := Role{
+			ID:   r.RoleID,
+			Name: r.RoleName,
+		}
+		rolesMap[r.UserID] = append(rolesMap[r.UserID], role)
+	}
+	return rolesMap, nil
+}

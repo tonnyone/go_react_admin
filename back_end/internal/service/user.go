@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+
 	"github.com/tonnyone/go_react_admin/internal/dao"
 	"github.com/tonnyone/go_react_admin/internal/dto"
 	"github.com/tonnyone/go_react_admin/internal/util"
@@ -10,12 +12,14 @@ import (
 )
 
 type UserService struct {
+	db      *gorm.DB
 	userDAO *dao.UserDAO
+	roleDAO *dao.RoleDAO
 }
 
 // NewUserService 构造函数，注入 UserDAO
-func NewUserService(userDAO *dao.UserDAO) *UserService {
-	return &UserService{userDAO: userDAO}
+func NewUserService(userDAO *dao.UserDAO, db *gorm.DB) *UserService {
+	return &UserService{userDAO: userDAO, db: db}
 }
 
 // LoginDTO 定义登录业务参数
@@ -24,29 +28,10 @@ type LoginDTO struct {
 	Password string
 }
 
-// UserDTO 定义用户业务参数
-type UserDTO struct {
-	ID         string     `json:"id,omitempty"` // uuid主键
-	Username   string     `json:"username,omitempty"`
-	Email      string     `json:"email,omitempty"`
-	Phone      string     `json:"phone,omitempty"`
-	Password   string     `json:"password,omitempty"` // 忽略掉
-	Department string     `json:"department,omitempty"`
-	CreatedAt  int64      `json:"created_at,omitempty"`
-	UpdatedAt  int64      `json:"updated_at,omitempty"`
-	Disabled   bool       `json:"disabled,omitempty"`
-	Roles      []dao.Role `json:"roles,omitempty"` // 关联的角色
-}
-
-type UserRoleDTO struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
 // 注册用户
-func (s *UserService) Register(ctx context.Context, db *gorm.DB, phone, email, password string) error {
+func (s *UserService) Register(ctx context.Context, phone, email, password string) error {
 	if phone != "" {
-		exist, err := s.userDAO.CheckPhoneExist(ctx, db, phone)
+		exist, err := s.userDAO.CheckPhoneExist(ctx, s.db, phone)
 		if err != nil {
 			return errors.New("内部错误")
 		}
@@ -55,7 +40,7 @@ func (s *UserService) Register(ctx context.Context, db *gorm.DB, phone, email, p
 		}
 	}
 	if email != "" {
-		exist, err := s.userDAO.CheckEmailExist(ctx, db, email)
+		exist, err := s.userDAO.CheckEmailExist(ctx, s.db, email)
 		if err != nil {
 			return errors.New("内部错误")
 		}
@@ -70,16 +55,16 @@ func (s *UserService) Register(ctx context.Context, db *gorm.DB, phone, email, p
 		Email:    email,
 		Password: util.MD5(password),
 	}
-	if err := db.WithContext(ctx).Create(&user).Error; err != nil {
+	if err := s.db.WithContext(ctx).Create(&user).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 // Login 处理登录逻辑, 返回 token
-func (s *UserService) Login(ctx context.Context, db *gorm.DB, dto *LoginDTO) (string, error) {
+func (s *UserService) Login(ctx context.Context, dto *LoginDTO) (string, error) {
 	md5Pwd := util.MD5(dto.Password)
-	exist, err := s.userDAO.CheckUserByPhoneOrEmailExist(ctx, db, dto.Account, md5Pwd)
+	exist, err := s.userDAO.CheckUserByPhoneOrEmailExist(ctx, s.db, dto.Account, md5Pwd)
 	if err != nil {
 		return "", errors.New("内部错误")
 	}
@@ -90,6 +75,34 @@ func (s *UserService) Login(ctx context.Context, db *gorm.DB, dto *LoginDTO) (st
 }
 
 // GetUsers 获取用户列表
-func (s *UserService) GetUsers(ctx context.Context, db *gorm.DB, pager *dto.Pager) ([]dao.User, int64, error) {
-	return s.userDAO.GetUsers(ctx, db, pager)
+func (s *UserService) GetUsers(ctx context.Context, pager *dto.Pager) ([]dto.UserDTO, int64, error) {
+
+	users, total, err := s.userDAO.GetUsers(ctx, s.db, pager)
+	if err != nil {
+		return nil, 0, err
+	}
+	var userDTOs []dto.UserDTO
+	for _, user := range users {
+		var userDTO dto.UserDTO
+		util.CopyStruct(&userDTO, user)
+		userDTOs = append(userDTOs, userDTO)
+	}
+	return userDTOs, total, nil
+}
+
+// BindRolesToUser handles the business logic of binding roles to a user.
+func (s *UserService) BindRolesToUser(ctx context.Context, req *dto.BindUserRolesReq) error {
+	if req.UserID=="" || len(req.RoleIDs)<=0 {
+		return fmt.Errorf("userId 或者 roleIDs 为空")
+	}
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		user, err := s.userDAO.GetUser(ctx, tx, req.UserID)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return errors.New("user not found")
+			}
+			return err
+		}
+		return s.userDAO.AppendUserRoles(ctx, tx, user.ID, req.RoleIDs)
+	})
 }

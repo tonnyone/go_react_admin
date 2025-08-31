@@ -24,7 +24,7 @@ const (
 type Resp[T any] struct {
 	Code Code   `json:"code"`
 	Msg  string `json:"msg"`
-	Data T      `json:"data"`
+	Data T      `json:"data,omitempty"`
 }
 
 type PageData[T any] struct {
@@ -38,6 +38,14 @@ func ResponseSuccss[T any](c *gin.Context, data T) {
 		Code: OK,
 		Msg:  "success",
 		Data: data,
+	})
+}
+
+// JSON 统一响应输出
+func ResponseSuccssNoData(c *gin.Context) {
+	c.JSON(http.StatusOK, Resp[any]{
+		Code: OK,
+		Msg:  "success",
 	})
 }
 

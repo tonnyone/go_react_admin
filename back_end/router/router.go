@@ -11,24 +11,26 @@ import (
 
 func RegisterRoutes(r *gin.Engine) {
 	// --- 依赖注入 ---
-	userService := service.NewUserService(dao.NewUserDAO())
 	db := database.GetDB()
+	userService := service.NewUserService(dao.NewUserDAO(), db)
+	roleService := service.NewRoleService(dao.NewRoleDAO(), db)
 
 	// --- 公共路由组 (无需认证) ---
 	publicGroup := r.Group("")
 	{
-		publicGroup.POST("/login", handler.NewLoginHandler(userService, db))
-		publicGroup.POST("/register", handler.NewRegisterHandler(userService, db))
+		publicGroup.POST("/login", handler.NewLoginHandler(userService))
+		publicGroup.POST("/register", handler.NewRegisterHandler(userService))
 	}
 
 	// --- API 路由组 (需要认证) ---
 	apiGroup := r.Group("")
-	apiGroup.Use(middleware.BasicAuthMiddleware(userService, db))
+	apiGroup.Use(middleware.BasicAuthMiddleware(userService))
 	{
 		// 用户管理
 		userGroup := apiGroup.Group("user")
 		{
-			userGroup.GET("/list", handler.NewGetUsersHandler(userService, db))
+			userGroup.GET("/list", handler.NewGetUsersHandler(userService))
+			userGroup.POST("/:id/bindRole", handler.NewBindRolesHandler(userService))
 			// 在这里可以继续添加其他用户相关的路由，如：
 			// userGroup.GET("/:id", handler.GetUserHandler(userService))
 			// userGroup.POST("", handler.CreateUserHandler(userService))
@@ -37,7 +39,7 @@ func RegisterRoutes(r *gin.Engine) {
 		// 角色管理
 		roleGroup := apiGroup.Group("/role")
 		{
-			roleGroup.POST("/list", handler.ListRoleHandler(db)) // 假设这是获取角色列表
+			roleGroup.POST("/list", handler.ListRoleHandler(*roleService)) // 假设这是获取角色列表
 			// 在这里可以继续添加其他角色相关的路由
 		}
 	}
