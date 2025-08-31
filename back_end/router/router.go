@@ -30,7 +30,7 @@ func RegisterRoutes(r *gin.Engine) {
 		userGroup := apiGroup.Group("user")
 		{
 			userGroup.GET("/list", handler.NewGetUsersHandler(userService))
-			userGroup.POST("/:id/bindRole", handler.NewBindRolesHandler(userService))
+			userGroup.POST("/:id/bind_role", handler.NewBindRolesHandler(userService))
 			// 在这里可以继续添加其他用户相关的路由，如：
 			// userGroup.GET("/:id", handler.GetUserHandler(userService))
 			// userGroup.POST("", handler.CreateUserHandler(userService))
