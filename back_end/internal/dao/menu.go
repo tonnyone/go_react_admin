@@ -4,15 +4,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Menu struct {
-	ID        string `gorm:"primaryKey;size:32"`
-	Name      string `gorm:"not null;size:64"`
-	ParentID  string `gorm:"size:32"`
-	Path      string `gorm:"size:128"` // 前端路由
-	Type      string `gorm:"size:16"`  // 菜单/按钮
-	CreatedAt int64  `gorm:"autoCreateTime:milli"`
-}
-
 // CreateMenu 创建菜单
 func CreateMenu(db *gorm.DB, m *Menu) error {
 	return db.Create(m).Error

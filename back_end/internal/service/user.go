@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/tonnyone/go_react_admin/internal/dao"
 	"github.com/tonnyone/go_react_admin/internal/dto"
 	"github.com/tonnyone/go_react_admin/internal/util"
@@ -79,12 +80,26 @@ func (s *UserService) GetUsers(ctx context.Context, pager *dto.Pager) ([]dto.Use
 
 	users, total, err := s.userDAO.GetUsers(ctx, s.db, pager)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("GetUsers failed: %w", err)
 	}
-	var userDTOs []dto.UserDTO
+	userIDs := lo.Map(users, func(user dao.User, _ int) string {
+		return user.ID
+	})
+	rolesMap, err := s.roleDAO.FindRolesByUserIDs(ctx, s.db, userIDs)
+	if err != nil {
+		return nil, 0, fmt.Errorf("FindRolesByUserIDs failed: %w", err)
+	}
+	userDTOs := make([]dto.UserDTO, 0, len(users))
 	for _, user := range users {
 		var userDTO dto.UserDTO
-		util.CopyStruct(&userDTO, user)
+		if err := util.CopyStruct(&userDTO, &user); err != nil {
+			return nil, 0, fmt.Errorf("CopyStruct user to userDTO failed: %w", err)
+		}
+		if roles, ok := rolesMap[user.ID]; ok {
+			if err := util.CopyStruct(&userDTO.Roles, &roles); err != nil {
+				return nil, 0, fmt.Errorf("CopyStruct roles to userDTO.Roles failed: %w", err)
+			}
+		}
 		userDTOs = append(userDTOs, userDTO)
 	}
 	return userDTOs, total, nil
@@ -92,7 +107,7 @@ func (s *UserService) GetUsers(ctx context.Context, pager *dto.Pager) ([]dto.Use
 
 // BindRolesToUser handles the business logic of binding roles to a user.
 func (s *UserService) BindRolesToUser(ctx context.Context, req *dto.BindUserRolesReq) error {
-	if req.UserID=="" || len(req.RoleIDs)<=0 {
+	if req.UserID == "" || len(req.RoleIDs) <= 0 {
 		return fmt.Errorf("userId 或者 roleIDs 为空")
 	}
 	return s.db.Transaction(func(tx *gorm.DB) error {

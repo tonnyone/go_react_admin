@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/tonnyone/go_react_admin/internal/dao"
 	"github.com/tonnyone/go_react_admin/internal/dto"
@@ -25,8 +26,14 @@ func NewRoleService(dao *dao.RoleDAO, db *gorm.DB) *RoleService {
 func (s *RoleService) CreateRole(ctx context.Context, roleDTO *dto.RoleDTO) error {
 
 	var role dao.Role
-	util.CopyStruct(&role, roleDTO)
+	util.CopyStruct(&role, &roleDTO)
 	role.ID = util.GenerateID()
+	if role.Type == "" {
+		role.Type = string(dto.RoleTypeCustom)
+	}
+	if s.roleDAO.CheckRoleExist(ctx, s.db, role.Name) {
+		return fmt.Errorf("角色已存在: %s", role.Name)
+	}
 	// 可加业务校验
 	return s.roleDAO.CreateRole(ctx, s.db, &role)
 }

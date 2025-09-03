@@ -4,16 +4,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Resource 资源表
-type Resource struct {
-	ID        uint   `gorm:"primaryKey"`
-	Name      string `gorm:"not null;size:64"`
-	Path      string `gorm:"size:128"`
-	Method    string `gorm:"size:16"`
-	ParentID  string `gorm:"size:32"`
-	CreatedAt int64  `gorm:"autoCreateTime:milli"`
-}
-
 // CreateResource 创建资源
 func CreateResource(db *gorm.DB, r *Resource) error {
 	return db.Create(r).Error

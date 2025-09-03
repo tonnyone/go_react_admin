@@ -1,0 +1,28 @@
+meta {
+  name: add
+  type: http
+  seq: 2
+}
+
+post {
+  url: 127.0.0.1:8080/role
+  body: json
+  auth: basic
+}
+
+headers {
+  : 
+}
+
+auth:basic {
+  username: pgtest@example.com
+  password: pgtest456
+}
+
+body:json {
+  {
+    "name": "普通用户",
+    "describe": "normal",
+    "type": "custom"
+  }
+}

@@ -2,23 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"time"
 )
-
-// RoleResource 角色-资源关联表
-// 可根据业务需要扩展字段
-
-type RoleResource struct {
-	ID         uint      `gorm:"primaryKey" json:"id"`
-	RoleID     uint      `gorm:"not null;index;comment:角色ID" json:"role_id"`
-	ResourceID uint      `gorm:"not null;index;comment:资源ID" json:"resource_id"`
-	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`
-}
-
-// TableName 自定义表名
-func (RoleResource) TableName() string {
-	return "role_resource"
-}
 
 // CreateRoleResource 创建角色-资源关联
 func CreateRoleResource(db *gorm.DB, rr *RoleResource) error {

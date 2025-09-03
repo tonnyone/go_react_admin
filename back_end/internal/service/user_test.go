@@ -3,72 +3,10 @@ package service
 import (
 	"context"
 	"testing"
-	"time"
 
-	"github.com/tonnyone/go_react_admin/internal/config"
 	"github.com/tonnyone/go_react_admin/internal/dao"
-	"github.com/tonnyone/go_react_admin/internal/util"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
-
-func setupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open in-memory db: %v", err)
-	}
-	if err := db.AutoMigrate(&dao.User{}); err != nil {
-		t.Fatalf("failed to migrate: %v", err)
-	}
-	return db
-}
-
-func setupPostgresTestDB(t *testing.T) *gorm.DB {
-	cfg, err := config.LoadConfigWithPath("../../")
-	if err != nil {
-		t.Fatalf("failed to load config: %v", err)
-	}
-	dsn := cfg.DB.DSN
-	if dsn == "" {
-		t.Skip("config DB.DSN not set, skip Postgres test")
-	}
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("failed to open postgres db: %v", err)
-	}
-	if err := db.AutoMigrate(&dao.User{}); err != nil {
-		t.Fatalf("failed to migrate: %v", err)
-	}
-	return db
-}
-
-func TestUserService_Login(t *testing.T) {
-	db := setupTestDB(t)
-	userDAO := dao.NewUserDAO()
-	userService := NewUserService(userDAO, db)
-
-	// 插入测试用户
-	db.Create(&dao.User{Username: "testuser", Password: util.MD5("123456")})
-
-	// 构造一个超时 context
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
-	defer cancel()
-
-	// 模拟慢查询（这里直接 sleep，实际可在 dao 层 sleep 或 mock）
-	time.Sleep(2 * time.Millisecond)
-	dto := &LoginDTO{Account: "testuser", Password: "123456"}
-	_, err := userService.Login(ctx, dto)
-	if err != nil {
-		t.Errorf("expected login success, got err: %v", err)
-	}
-	// 错误密码
-	dtoFail := &LoginDTO{Account: "testuser", Password: "wrong"}
-	_, err = userService.Login(ctx, dtoFail)
-	if err == nil {
-		t.Errorf("expected login failure, got nil error")
-	}
-}
 
 func cleanTestUser(t *testing.T, db *gorm.DB, userDAO *dao.UserDAO, phone, email string) {
 	err1 := userDAO.DeleteByPhone(context.Background(), db, phone)

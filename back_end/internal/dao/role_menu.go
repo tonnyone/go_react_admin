@@ -5,14 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// RoleMenu 角色-菜单关联表
-type RoleMenu struct {
-	ID        string `gorm:"type:char(36);primaryKey"`
-	RoleID    string `gorm:"type:char(36);not null;index"`
-	MenuID    string `gorm:"type:char(36);not null;index"`
-	CreatedAt int64  `gorm:"autoCreateTime:milli"`
-}
-
 // RoleMenuDAO 角色-菜单关联表操作
 type RoleMenuDAO struct{}
 

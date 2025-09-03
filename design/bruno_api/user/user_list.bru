@@ -1,0 +1,21 @@
+meta {
+  name: user_list
+  type: http
+  seq: 2
+}
+
+get {
+  url: 127.0.0.1:8080/user/list?current=1&page_size=2&phone=18888
+  body: none
+  auth: none
+}
+
+params:query {
+  current: 1
+  page_size: 2
+  phone: 18888
+}
+
+headers {
+  Authorization: Basic cGd0ZXN0QGV4YW1wbGUuY29tOnBndGVzdDQ1Ng==
+}

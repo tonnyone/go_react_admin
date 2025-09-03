@@ -8,26 +8,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type User struct {
-	ID         string  `gorm:"type:char(36);primaryKey"` // uuid主键
-	Username   string  `gorm:"not null;size:64"`
-	Email      string  `gorm:"unique;size:128"`
-	Phone      string  `gorm:"unique;size:64"`
-	Password   string  `gorm:"not null;size:128" json:"password,omitempty"` // 忽略掉
-	Department string  `gorm:"size:128"`
-	CreatedAt  int64   `gorm:"autoCreateTime:milli"`
-	UpdatedAt  int64   `gorm:"autoUpdateTime:milli"`
-	Disabled   bool    `gorm:"default:false"`
-	Roles      []*Role `gorm:"many2many:user_roles;"`
-}
-
-type UserRole struct {
-	UserID    string `gorm:"type:char(36);not null;primaryKey"`
-	RoleID    string `gorm:"type:char(36);not null;primaryKey"`
-	CreatedAt int64  `gorm:"autoCreateTime:milli"`
-	CreatedBy string `gorm:"type:char(36);not null;"`
-}
-
 type UserDAO struct{}
 
 // NewUserDAO 创建 UserDAO 实例

@@ -65,7 +65,7 @@ func ListRoleHandler(roleService service.RoleService) gin.HandlerFunc {
 			ResponseParamError(c, err)
 			return
 		}
-		roles, total, err := roleService.ListRoles(c.Request.Context(), pager.PageSize, pager.PageSize)
+		roles, total, err := roleService.ListRoles(c.Request.Context(), pager.Current, pager.PageSize)
 		if err != nil {
 			ResponseFail(c, err.Error())
 			return
