@@ -159,7 +159,40 @@ const User = () => {
           dataSource={users}
           columns={[
             { title: '用户名', dataIndex: 'username', key: 'username' },
+            { title: '手机号', dataIndex: 'phone', key: 'phone' },
             { title: '邮箱', dataIndex: 'email', key: 'email' },
+            { title: '部门', dataIndex: 'department', key: 'department' },
+            { title: '更新时间', dataIndex: 'updated_at', key: 'updated_at' },
+            {
+              title: '角色',
+              key: 'roles',
+              dataIndex: 'roles',
+              render: (roles) => (
+                <>
+                  {
+                    roles && roles.map(role => {
+                      return (
+                        <Tag key={role.id}>
+                          {role.name}
+                        </Tag>
+                      );
+                    })
+                  }
+                </>
+              ),
+            },
+            {
+              title: '操作',
+              key: '操作',
+              render: (_, record) => (
+                <Space size="middle">
+                  <a>修改</a>
+                  <a>修改角色</a>
+                  <a>重置密码</a>
+                  <a>删除</a>
+                </Space>
+              ),
+            }
           ]}
           rowKey="ID"
           // 将我们的状态和处理函数传递给 Table 组件

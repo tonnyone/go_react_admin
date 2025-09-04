@@ -31,7 +31,7 @@ export const logout = async () => {
  */
 export async function getUserList(params) {
   // 使用 await 等待请求完成
-  const response = await request.get('/user/list', { params });
+  const response = await request.get('/user', { params });
   // 检查后端返回的业务状态
   if (response.code == 0) {
     // 成功，则返回真正的数据部分，供组件直接使用
