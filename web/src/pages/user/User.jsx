@@ -1,65 +1,10 @@
-import { Alert, Button, Checkbox, Col, Form, Input, Modal, Row, Space, Spin, Table, Tag } from 'antd';
+import { Alert, Button, Col, Form, Input, Row, Space, Spin, Table, Tag } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
-import { getUserList } from '../service/user';
-
-const columns = [
-  {
-    title: '用户名',
-    dataIndex: 'name',
-    key: 'name',
-    render: text => <a>{text}</a>,
-  },
-  {
-    title: '手机号',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: '邮箱',
-    dataIndex: 'email',
-    key: 'email',
-  },
-  {
-    title: '部门',
-    dataIndex: 'department',
-    key: 'department',
-  },
-  {
-    title: '角色',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map(tag => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: '操作',
-    key: '操作',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>修改</a>
-        <a>修改角色</a>
-        <a>重置密码</a>
-        <a>删除</a>
-      </Space>
-    ),
-  },
-];
+import { getUserList } from '../../service/user';
 
 const User = () => {
-  const [open, setOpen] = useState(false);
+
+  const [openAdd, setOpenAdd] = useState(false);
   const [form] = Form.useForm();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +69,6 @@ const User = () => {
   };
 
   const handleAdd = (values) => {
-    // TODO: 提交新增用户逻辑
     console.log('新增用户:', values);
     setOpen(false);
     form.resetFields();
@@ -200,45 +144,7 @@ const User = () => {
           onChange={handleTableChange}
         />
       </Spin>
-      <Modal
-        title="新增用户"
-        open={open}
-        onCancel={() => setOpen(false)}
-        footer={null}
-        destroyOnClose
-      >
-        <Form layout="vertical" form={form} onFinish={handleAdd}>
-          <Form.Item label="用户名" name="name" rules={[{ required: true, message: '请输入用户名' }]}> 
-            <Input />
-          </Form.Item>
-          <Form.Item label="手机号" name="phone" rules={[{ required: true, message: '请输入手机号' }]}> 
-            <Input />
-          </Form.Item>
-          <Form.Item label="邮箱" name="email" rules={[{ required: true, message: '请输入邮箱' }]}> 
-            <Input />
-          </Form.Item>
-          <Form.Item label="部门" name="department"> 
-            <Input />
-          </Form.Item>
-          <Form.Item label="角色" name="role"> 
-              <Checkbox.Group
-                options={[
-                  { label: '管理员', value: 'admin' },
-                  { label: '用户', value: 'user' },
-                  { label: '访客', value: 'guest' },
-                  { label: '老师', value: 'teacher' },
-                  { label: '开发者', value: 'developer' },
-                ]}
-                style={{ width: '100%' }}
-              />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-              提交
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+
     </div>
   );
 };

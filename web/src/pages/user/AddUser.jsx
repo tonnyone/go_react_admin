@@ -1,15 +1,17 @@
-import { Button, Card, Form, Input } from 'antd';
+import { Button, Checkbox, Form, Input, Modal } from 'antd';
 
-const AddUser = () => {
+const AddUser = ({person, open }) => {
   const onFinish = (values) => {
-    // TODO: 提交新增用户逻辑
     console.log('新增用户:', values);
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f5f6fa' }}>
-      <Card title="新增用户" style={{ width: 400 }}>
-        <Form layout="vertical" onFinish={onFinish}>
+      <Modal
+        title="新增用户"
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}>
+        <Form layout="vertical" form={form} onFinish={handleAdd}>
           <Form.Item label="用户名" name="name" rules={[{ required: true, message: '请输入用户名' }]}> 
             <Input />
           </Form.Item>
@@ -23,7 +25,15 @@ const AddUser = () => {
             <Input />
           </Form.Item>
           <Form.Item label="角色" name="role"> 
-            <Input />
+              <Checkbox.Group
+                options={[
+                  { label: '管理员', value: 'admin' },
+                  { label: '用户', value: 'user' },
+                  { label: '访客', value: 'guest' },
+                  { label: '老师', value: 'teacher' },
+                  { label: '开发者', value: 'developer' },
+                ]}
+                style={{ width: '100%' }}/>
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
@@ -31,8 +41,7 @@ const AddUser = () => {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
-    </div>
+      </Modal>
   );
 };
 

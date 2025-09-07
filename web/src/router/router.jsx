@@ -6,7 +6,7 @@ import Menus from '../pages/Menus.jsx';
 import NotFound from '../pages/NotFound.jsx';
 import Resource from '../pages/Resource.jsx';
 import Role from '../pages/Role.jsx';
-import User from '../pages/User.jsx';
+import User from '../pages/user/User.jsx';
 
 
 // 路由配置（path + Component直接引用）
