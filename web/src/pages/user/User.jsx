@@ -1,11 +1,11 @@
 import { Alert, Button, Col, Form, Input, Row, Space, Spin, Table, Tag } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { getUserList } from '../../service/user';
+import AddUser from './UserAdd';
 
 const User = () => {
-
-  const [openAdd, setOpenAdd] = useState(false);
-  const [form] = Form.useForm();
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const [userForm] = Form.useForm();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,7 +34,7 @@ const User = () => {
         // ...可以传递其他过滤和排序参数
       });
       setUsers(response.list);
-      console.log("response users", response.list)
+      console.log("resp users", response.list)
       // 更新分页状态，特别是 total
       setTableParams(prev => ({
         ...prev,
@@ -69,9 +69,16 @@ const User = () => {
   };
 
   const handleAdd = (values) => {
-    console.log('新增用户:', values);
-    setOpen(false);
-    form.resetFields();
+    console.log("add user", values)
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+    }, 60000)
+  };
+
+  const handleCancel = () => {
+    userForm.resetFields();
+    setIsUserModalVisible(false);
   };
 
   if (error) {
@@ -80,6 +87,7 @@ const User = () => {
 
   return (
     <div>
+      <AddUser isUserModalVisible={isUserModalVisible} userForm={userForm} handleAdd={handleAdd} handleCancel={handleCancel}  loading={loading} />
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col flex="1 1 auto">
           <Input.Search
@@ -93,7 +101,7 @@ const User = () => {
           />
         </Col>
         <Col>
-          <Button type="primary" style={{ float: 'right' }} onClick={() => setOpen(true)}>
+          <Button type="primary" style={{ float: 'right' }} onClick={() => setIsUserModalVisible(true)}>
             新增
           </Button>
         </Col>
@@ -138,13 +146,12 @@ const User = () => {
               ),
             }
           ]}
-          rowKey="ID"
+          rowKey="id"
           // 将我们的状态和处理函数传递给 Table 组件
           pagination={tableParams.pagination}
           onChange={handleTableChange}
         />
       </Spin>
-
     </div>
   );
 };
