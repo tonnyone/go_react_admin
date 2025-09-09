@@ -1,14 +1,30 @@
 import { Button, Checkbox, Form, Input, Modal } from 'antd';
+import { useEffect, useState } from 'react';
 
-const AddUser = ({ userForm, isUserModalVisible, handleAdd, handleCancel, loading }) => {
+const UserAdd = ({ form, roles, open, onSubmit, onCancel, loading }) => {
+  const [isEdit, setIsEdit] = useState(false);
+
+  // 监听 form 和 open 的变化来判断是否为编辑模式
+  useEffect(() => {
+    if (open && form) {
+      try {
+        const formValues = form.getFieldsValue();
+        setIsEdit(formValues && formValues.id);
+      } catch (error) {
+        // 如果 form 还没准备好，默认为新增模式
+        setIsEdit(false);
+      }
+    }
+  }, [open, form]);
+  
   return (
       <Modal
-        title="新增用户"
-        open={isUserModalVisible}
-        onCancel={handleCancel}
+        title={isEdit ? "修改用户" : "新增用户"}
+        open={open}
+        onCancel={onCancel}
         footer={null}
       >
-        <Form layout="vertical" form={userForm} onFinish={handleAdd}>
+        <Form layout="vertical" form={form} onFinish={onSubmit}>
           <Form.Item label="用户名" name="name" rules={[{ required: true, message: '请输入用户名' }]}> 
             <Input />
           </Form.Item>
@@ -27,20 +43,14 @@ const AddUser = ({ userForm, isUserModalVisible, handleAdd, handleCancel, loadin
 
           <Form.Item label="角色" name="role"> 
             <Checkbox.Group
-              options={[
-                { label: '管理员', value: 'admin' },
-                { label: '用户', value: 'user' },
-                { label: '访客', value: 'guest' },
-                { label: '老师', value: 'teacher' },
-                { label: '开发者', value: 'developer' },
-              ]}
+              options={roles.map(role => ({ label: role.name, value: role.id, key: role.id }))}
               style={{ width: '100%' }}
             />
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ width: '100%' }} loading={loading}>
-              提交
+              {isEdit ? "更新" : "提交"}
             </Button>
           </Form.Item>
         </Form>
@@ -48,4 +58,4 @@ const AddUser = ({ userForm, isUserModalVisible, handleAdd, handleCancel, loadin
   );
 };
 
-export default AddUser;
+export default UserAdd;

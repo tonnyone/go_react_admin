@@ -26,13 +26,25 @@ instance.interceptors.request.use(
 
 // 响应拦截器
 instance.interceptors.response.use(
-  response => response.data,
+  response => {
+    const data = response.data;
+    // 统一处理业务状态码
+    if (data.code !== 0) {
+      // 业务错误，抛出错误让调用方处理
+      const error = new Error(data.msg || data.message || '请求失败');
+      error.code = data.code;
+      return Promise.reject(error);
+    }
+    // 成功时直接返回 data 部分
+    return data.data;
+  },
   error => {
-    // 可全局处理错误提示
-    // if (error.response) {
-    //   message.error(error.response.data.message || '请求错误');
-    // }
-    // console.error("error: %o", error);
+    // HTTP 错误处理
+    if (error.response) {
+      console.error('HTTP error:', error.response.status, error.response.data);
+    } else {
+      console.error('Network error:', error.message);
+    }
     return Promise.reject(error);
   }
 );
